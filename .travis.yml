@@ -1,0 +1,25 @@
+sudo: required
+services:
+ - docker
+
+before_install:
+  - docker build -t recafe54/react-test -f ./client/Dockerfile.dev ./client
+
+script:
+  - docker run -e CI=true recafe54/react-test npm test
+
+after_success:
+  - docker build -t recafe54/multi-client ./client
+  - docker build -t recafe54/multi-nginx ./nginx
+  - docker build -t recafe54/multi-server ./server 
+  - docker build -t recafe54/multi-worker ./worker
+# Login in to the docker CLI
+  - echo "$DOCKER_PASSWORD" | docker login - u "$DOCKER_ID" --password-stdin
+# .........................
+  - docker push recafe54/multi-client
+  - docker push recafe54/multi-nginx
+  - docker push recafe54/multi-server
+  - docker push recafe54/multi-worker 
+
+
+
